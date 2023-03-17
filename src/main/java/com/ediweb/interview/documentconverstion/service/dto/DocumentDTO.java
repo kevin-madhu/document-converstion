@@ -82,7 +82,7 @@ public class DocumentDTO {
 
     @Override
     public String toString() {
-        return "Department{" +
+        return "Document{" +
                 "id=" + getId() +
                 ", fileName='" + getFileName() + "'" +
                 ", inputXML='" + getInputXML() + "'" +
