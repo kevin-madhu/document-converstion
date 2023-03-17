@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1679075001-1
+      author: kevin
+      changes:
+        - createSequence:
+            sequenceName: SEQUENCE_GENERATOR
+            startValue: 50
+            incrementBy: 50

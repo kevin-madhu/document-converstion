@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: kevin
+      changes:
+          - createTable:
+              tableName: document
+              columns:
+                - column:
+                    name: id
+                    type: int
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                - column:
+                   name: file_name
+                   type: nvarchar(150)
+                   constraints:
+                     nullable: false
+                - column:
+                   name: input_xml
+                   type: clob
+                   constraints:
+                     nullable: false
+                - column:
+                    name: output_xml
+                    type: clob
+                    constraints:
+                      nullable: false
+                - column:
+                    name: received_date
+                    type: datetime
+                    constraints:
+                      nullable: false

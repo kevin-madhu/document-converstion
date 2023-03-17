@@ -1,2 +1,7 @@
 databaseChangeLog:
-  -
+  - include:
+      file: config/liquibase/changelog/1679075001_added_sequence_SequenceGenerator.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: config/liquibase/changelog/1679075023_added_entity_Document.yaml
+      relativeToChangelogFile: false
