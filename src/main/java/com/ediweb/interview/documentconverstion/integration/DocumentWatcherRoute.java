@@ -1,5 +1,6 @@
 package com.ediweb.interview.documentconverstion.integration;
 
+import com.ediweb.interview.documentconverstion.config.misc.ApplicationProperties;
 import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
@@ -7,16 +8,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class DocumentWatcherRoute extends RouteBuilder {
 
-    private final String PATH = "/home/kevin/z";
+    private final ApplicationProperties applicationProperties;
 
-    private final String XSLT_PATH = "integration/idoc2order.xsl";
+    public DocumentWatcherRoute(ApplicationProperties applicationProperties) {
+        this.applicationProperties = applicationProperties;
+    }
 
     @Override
     public void configure() throws Exception {
-        from("file:"+ PATH + "?delete=true")
+        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
                 .convertBodyTo(String.class)
                 .setProperty(CamelExchangeProperty.ORIGINAL_CONTENT.toString(), body())
-                .to("xslt:" + XSLT_PATH)
+                .to("xslt:" + applicationProperties.getCamel().getXsltPath())
                 .to("bean:XSLTProcessor");
     }
 }
