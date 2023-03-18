@@ -5,6 +5,8 @@ import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchange
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+import javax.xml.transform.TransformerException;
+
 @Component
 public class DocumentWatcherRoute extends RouteBuilder {
 
@@ -16,10 +18,16 @@ public class DocumentWatcherRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
+
+        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true&backoffErrorThreshold=1&backoffMultiplier=3")
                 .convertBodyTo(String.class)
                 .setProperty(CamelExchangeProperty.ORIGINAL_CONTENT.toString(), body())
-                .to("xslt:" + applicationProperties.getCamel().getXsltPath())
+                .doTry()
+                    .to("xslt:" + applicationProperties.getCamel().getXsltPath())
+                .doCatch(TransformerException.class)
+                    .log("Failed conversion: Conversion error occurred on file ${header.CamelFileName}. Removing.")
+                    .stop()
+                .end()
                 .to("bean:XSLTProcessor");
     }
 }
