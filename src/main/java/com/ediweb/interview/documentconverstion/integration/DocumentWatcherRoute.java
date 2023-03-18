@@ -19,7 +19,7 @@ public class DocumentWatcherRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true&backoffErrorThreshold=1&backoffMultiplier=3")
+        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
                 .convertBodyTo(String.class)
                 .setProperty(CamelExchangeProperty.ORIGINAL_CONTENT.toString(), body())
                 .doTry()
