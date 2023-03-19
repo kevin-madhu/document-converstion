@@ -1,5 +1,6 @@
 package com.ediweb.interview.documentconverstion.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -13,6 +14,7 @@ public class ProcessedDocumentDTO {
     private Long originalDocumentId;
 
     @NotBlank
+    @JsonIgnore
     private String documentBody;
 
     private ZonedDateTime handlingDate;

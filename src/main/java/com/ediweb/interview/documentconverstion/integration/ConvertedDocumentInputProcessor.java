@@ -1,6 +1,8 @@
 package com.ediweb.interview.documentconverstion.integration;
 
 import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
+import com.ediweb.interview.documentconverstion.service.OriginalDocumentService;
 import com.ediweb.interview.documentconverstion.service.ProcessedDocumentService;
 import com.ediweb.interview.documentconverstion.service.dto.ProcessedDocumentDTO;
 import org.apache.camel.Exchange;
@@ -15,8 +17,11 @@ public class ConvertedDocumentInputProcessor {
 
     private final ProcessedDocumentService processedDocumentService;
 
-    public ConvertedDocumentInputProcessor(ProcessedDocumentService processedDocumentService) {
+    private final OriginalDocumentService originalDocumentService;
+
+    public ConvertedDocumentInputProcessor(ProcessedDocumentService processedDocumentService, OriginalDocumentService originalDocumentService) {
         this.processedDocumentService = processedDocumentService;
+        this.originalDocumentService = originalDocumentService;
     }
 
     @Handler
@@ -28,5 +33,7 @@ public class ConvertedDocumentInputProcessor {
         processedDocumentDTO.setDocumentBody(exchange.getMessage().getBody().toString());
         processedDocumentDTO.setOriginalDocumentId((Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString())));
         processedDocumentService.save(processedDocumentDTO);
+
+        originalDocumentService.setProcessingStatus(processedDocumentDTO.getOriginalDocumentId(), DocumentProcessingStatus.COMPLETED);
     }
 }

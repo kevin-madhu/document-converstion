@@ -1,6 +1,7 @@
 package com.ediweb.interview.documentconverstion.service.dto;
 
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -14,6 +15,7 @@ public class OriginalDocumentDTO {
     private String fileName;
 
     @NotBlank
+    @JsonIgnore
     private String documentBody;
 
     @NotNull

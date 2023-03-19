@@ -21,19 +21,20 @@ public class DocumentWatcherRoute extends RouteBuilder {
 
         from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
                 .convertBodyTo(String.class)
-                .to("bean:originalDocumentInputProcessor")
+                .bean(OriginalDocumentInputProcessor.class)
                 .log("log: Original Document created with id ${body}")
                 .doTry()
-                    //.setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString(), body())
                     .to("xslt:" + applicationProperties.getCamel().getXsltPath())
                     .log("log: Converted document as per XSLT")
                 .doCatch(TransformerException.class)
                     .log("Failed conversion: Conversion error occurred on file ${header.CamelFileName}. Removing.")
+                    .bean(OriginalDocumentInputProcessor.class, "processingError")
                     .stop()
                 .doCatch(Exception.class)
                     .log("Exception: ${exception.message}. Removing.")
-                    .stop()
+                    .bean(OriginalDocumentInputProcessor.class, "processingError")
+                .stop()
                 .end()
-                .to("bean:convertedDocumentInputProcessor");
+                .bean(ConvertedDocumentInputProcessor.class);
     }
 }

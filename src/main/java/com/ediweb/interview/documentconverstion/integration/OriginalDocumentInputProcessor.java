@@ -33,4 +33,12 @@ public class OriginalDocumentInputProcessor {
 
         exchange.setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString(), originalDocument.getId());
     }
+
+    public void processingError(Exchange exchange) {
+        String documentName = exchange.getMessage().getHeader(CamelExchangeProperty.CamelFileName.toString()).toString();
+        logger.info("Processing of document name" + documentName + " failed.");
+
+        Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
+        originalDocumentService.setProcessingStatus(originalDocumentId, DocumentProcessingStatus.ERROR);
+    }
 }

@@ -1,6 +1,7 @@
 package com.ediweb.interview.documentconverstion.service;
 
 import com.ediweb.interview.documentconverstion.domain.OriginalDocument;
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
 import com.ediweb.interview.documentconverstion.repository.OriginalDocumentRepository;
 import com.ediweb.interview.documentconverstion.service.dto.OriginalDocumentDTO;
 import com.ediweb.interview.documentconverstion.service.mapper.OriginalDocumentMapper;
@@ -64,5 +65,19 @@ public class OriginalDocumentService {
     public Optional<OriginalDocumentDTO> findOne(Long id) {
         log.debug("Request to get OriginalDocument : {}", id);
         return originalDocumentRepository.findById(id).map(originalDocumentMapper::toDto);
+    }
+
+    /**
+     * Set processing status of original document by id.
+     *
+     * @param id the id of the entity.
+     * @param processingStatus the processingStatus of the entity.
+     */
+    public void setProcessingStatus(Long id, DocumentProcessingStatus processingStatus) {
+        log.debug("Request to set processing status of OriginalDocument : {} to {}", id, processingStatus);
+
+        OriginalDocument originalDocument = originalDocumentRepository.findById(id).orElseThrow();
+        originalDocument.setProcessingStatus(processingStatus);
+        originalDocumentRepository.save(originalDocument);
     }
 }
