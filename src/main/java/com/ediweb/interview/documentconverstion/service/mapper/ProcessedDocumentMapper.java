@@ -12,6 +12,7 @@ import org.mapstruct.Named;
  */
 @Mapper(componentModel = "spring")
 public interface ProcessedDocumentMapper extends EntityMapper<ProcessedDocumentDTO, ProcessedDocument> {
+    @Mapping(target = "originalDocumentId", source = "originalDocument.id")
     ProcessedDocumentDTO toDto(ProcessedDocument s);
 
     @Mapping(target = "originalDocument.id", source = "originalDocumentId")
