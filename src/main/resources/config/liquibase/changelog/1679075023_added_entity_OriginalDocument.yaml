@@ -4,7 +4,7 @@ databaseChangeLog:
       author: kevin
       changes:
           - createTable:
-              tableName: document
+              tableName: original_document
               columns:
                 - column:
                     name: id
@@ -18,13 +18,13 @@ databaseChangeLog:
                    constraints:
                      nullable: false
                 - column:
-                   name: input_xml
+                   name: document_body
                    type: clob
                    constraints:
                      nullable: false
                 - column:
-                    name: output_xml
-                    type: clob
+                    name: processing_status
+                    type: nvarchar(150)
                     constraints:
                       nullable: false
                 - column:

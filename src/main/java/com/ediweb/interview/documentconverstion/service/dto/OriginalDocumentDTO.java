@@ -1,21 +1,23 @@
 package com.ediweb.interview.documentconverstion.service.dto;
 
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-public class DocumentDTO {
+public class OriginalDocumentDTO {
     private Long id;
 
     @NotBlank
     private String fileName;
 
     @NotBlank
-    private String inputXML;
+    private String documentBody;
 
-    @NotBlank
-    private String outputXML;
+    @NotNull
+    private DocumentProcessingStatus processingStatus;
 
     private ZonedDateTime receivedDate;
 
@@ -35,20 +37,20 @@ public class DocumentDTO {
         this.fileName = fileName;
     }
 
-    public String getInputXML() {
-        return inputXML;
+    public String getDocumentBody() {
+        return documentBody;
     }
 
-    public void setInputXML(String inputXML) {
-        this.inputXML = inputXML;
+    public void setDocumentBody(String documentBody) {
+        this.documentBody = documentBody;
     }
 
-    public String getOutputXML() {
-        return outputXML;
+    public DocumentProcessingStatus getProcessingStatus() {
+        return processingStatus;
     }
 
-    public void setOutputXML(String outputXML) {
-        this.outputXML = outputXML;
+    public void setProcessingStatus(DocumentProcessingStatus processingStatus) {
+        this.processingStatus = processingStatus;
     }
 
     public ZonedDateTime getReceivedDate() {
@@ -64,15 +66,15 @@ public class DocumentDTO {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof DocumentDTO)) {
+        if (!(o instanceof OriginalDocumentDTO)) {
             return false;
         }
 
-        DocumentDTO documentDTO = (DocumentDTO) o;
+        OriginalDocumentDTO originalDocumentDTO = (OriginalDocumentDTO) o;
         if (this.id == null) {
             return false;
         }
-        return Objects.equals(this.id, documentDTO.id);
+        return Objects.equals(this.id, originalDocumentDTO.id);
     }
 
     @Override
@@ -82,11 +84,11 @@ public class DocumentDTO {
 
     @Override
     public String toString() {
-        return "Document{" +
+        return "OriginalDocument{" +
                 "id=" + getId() +
                 ", fileName='" + getFileName() + "'" +
-                ", inputXML='" + getInputXML() + "'" +
-                ", outputXML='" + getOutputXML() + "'" +
+                ", documentBody='" + getDocumentBody() + "'" +
+                ", processingStatus='" + getProcessingStatus() + "'" +
                 ", receivedDate='" + getReceivedDate() + "'" +
                 "}";
     }

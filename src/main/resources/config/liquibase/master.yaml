@@ -3,5 +3,11 @@ databaseChangeLog:
       file: config/liquibase/changelog/1679075001_added_sequence_SequenceGenerator.yaml
       relativeToChangelogFile: false
   - include:
-      file: config/liquibase/changelog/1679075023_added_entity_Document.yaml
+      file: config/liquibase/changelog/1679075023_added_entity_OriginalDocument.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: config/liquibase/changelog/1679222118_added_entity_ProcessedDocument.yaml
+      relativeToChangelogFile: false
+  - include:
+      file: config/liquibase/changelog/1679222118_added_entity_constraints_ProcessedDocument.yaml
       relativeToChangelogFile: false

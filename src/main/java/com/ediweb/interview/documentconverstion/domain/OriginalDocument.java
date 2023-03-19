@@ -1,6 +1,9 @@
 package com.ediweb.interview.documentconverstion.domain;
 
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,9 +13,9 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 @Entity
-@Table(name = "document")
+@Table(name = "original_document")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Document implements Serializable {
+public class OriginalDocument implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -23,14 +26,20 @@ public class Document implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "file_name", nullable = false)
+    @OneToOne(mappedBy = "originalDocument")
+    private ProcessedDocument processedDocument;
+
+    @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "input_xml", nullable = false)
-    private String inputXML;
+    @NotEmpty
+    @Column(name = "document_body", nullable = false)
+    private String documentBody;
 
-    @Column(name = "output_xml", nullable = false)
-    private String outputXML;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "processing_status", nullable = false)
+    private DocumentProcessingStatus processingStatus;
 
     @Column(name = "received_date", nullable = false)
     @CreationTimestamp
@@ -52,20 +61,20 @@ public class Document implements Serializable {
         this.fileName = fileName;
     }
 
-    public String getInputXML() {
-        return inputXML;
+    public String getDocumentBody() {
+        return documentBody;
     }
 
-    public void setInputXML(String inputXML) {
-        this.inputXML = inputXML;
+    public void setDocumentBody(String documentBody) {
+        this.documentBody = documentBody;
     }
 
-    public String getOutputXML() {
-        return outputXML;
+    public DocumentProcessingStatus getProcessingStatus() {
+        return processingStatus;
     }
 
-    public void setOutputXML(String outputXML) {
-        this.outputXML = outputXML;
+    public void setProcessingStatus(DocumentProcessingStatus processingStatus) {
+        this.processingStatus = processingStatus;
     }
 
     public ZonedDateTime getReceivedDate() {
@@ -81,10 +90,10 @@ public class Document implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Document)) {
+        if (!(o instanceof OriginalDocument)) {
             return false;
         }
-        return id != null && id.equals(((Document) o).id);
+        return id != null && id.equals(((OriginalDocument) o).id);
     }
 
     @Override
@@ -97,8 +106,8 @@ public class Document implements Serializable {
         return "Document{" +
                 "id=" + getId() +
                 ", fileName='" + getFileName() + "'" +
-                ", inputXML='" + getInputXML() + "'" +
-                ", outputXML='" + getOutputXML() + "'" +
+                ", documentBody='" + getDocumentBody() + "'" +
+                ", processingStatus='" + getProcessingStatus() + "'" +
                 ", receivedDate='" + getReceivedDate() + "'" +
                 "}";
     }

@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: kevin
+      changes:
+          - createTable:
+              tableName: processed_document
+              columns:
+                - column:
+                    name: id
+                    type: int
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                - column:
+                    name: original_document_id
+                    type: int
+                    constraints:
+                      nullable: true
+                - column:
+                   name: document_body
+                   type: clob
+                   constraints:
+                     nullable: false
+                - column:
+                    name: handling_date
+                    type: datetime
+                    constraints:
+                      nullable: false

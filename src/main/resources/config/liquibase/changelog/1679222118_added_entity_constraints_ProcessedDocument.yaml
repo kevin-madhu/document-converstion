@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1679222118-2
+      author: kevin
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: original_document_id
+            baseTableName: processed_document
+            constraintName: fk_processed_document__original_document_id
+            referencedColumnNames: id
+            referencedTableName: original_document
