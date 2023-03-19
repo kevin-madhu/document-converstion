@@ -1,14 +1,13 @@
 package com.ediweb.interview.documentconverstion.domain;
 
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.io.Serial;
+import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
@@ -16,8 +15,6 @@ import java.time.ZonedDateTime;
 @Table(name = "original_document")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OriginalDocument implements Serializable {
-
-    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id

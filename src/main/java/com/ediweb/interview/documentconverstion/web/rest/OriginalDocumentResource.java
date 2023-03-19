@@ -3,7 +3,6 @@ package com.ediweb.interview.documentconverstion.web.rest;
 import com.ediweb.interview.documentconverstion.domain.OriginalDocument;
 import com.ediweb.interview.documentconverstion.service.OriginalDocumentService;
 import com.ediweb.interview.documentconverstion.service.dto.OriginalDocumentDTO;
-import jakarta.xml.bind.annotation.XmlMimeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;

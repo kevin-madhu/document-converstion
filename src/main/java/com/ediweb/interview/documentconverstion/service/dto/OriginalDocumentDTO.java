@@ -2,9 +2,9 @@ package com.ediweb.interview.documentconverstion.service.dto;
 
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
