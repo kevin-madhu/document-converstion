@@ -2,12 +2,14 @@ package com.ediweb.interview.documentconverstion.web.rest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.ediweb.interview.documentconverstion.domain.OriginalDocument;
 import com.ediweb.interview.documentconverstion.service.ProcessedDocumentService;
 import com.ediweb.interview.documentconverstion.service.dto.ProcessedDocumentDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,13 +41,28 @@ public class ProcessedDocumentResource {
         return processedDocumentService.findAll();
     }
 
+
+    /**
+     * {@code GET  /documents} : get all the documents.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of documents in body.
+     */
+    @GetMapping(value = "/documents", produces = MediaType.APPLICATION_XML_VALUE)
+    public List<String> getAllDocumentBodiesAsXML() {
+        log.debug("REST request to get all Documents");
+        return processedDocumentService.findAll()
+                .stream()
+                .map(ProcessedDocumentDTO::getDocumentBody)
+                .collect(Collectors.toList());
+    }
+
     /**
      * {@code GET  /documents/:id} : get the "id" document.
      *
      * @param id the id of the documentDTO to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the documentDTO, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping(value = "/documents/{id}")
+    @GetMapping(value = "/documents/{id}", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<String> getProcessedDocument(@PathVariable Long id) {
         log.debug("REST request to get Processed Document : {}", id);
         Optional<ProcessedDocumentDTO> processedDocumentDTO = processedDocumentService.findOne(id);

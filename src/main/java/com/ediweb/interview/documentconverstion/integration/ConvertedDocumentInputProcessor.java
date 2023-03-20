@@ -61,7 +61,13 @@ public class ConvertedDocumentInputProcessor {
             Document document = parseXMLDocument(xmlDocumentContent);
             Element root = document.getDocumentElement();
             String originalDocumentURI = "/api/original-documents/" + originalDocumentId;
-            root.setAttribute("href", originalDocumentURI);
+
+            root.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+            Element parentDocument = document.createElement("Original-Document");
+            parentDocument.setAttribute("xlink:type", "simple");
+            parentDocument.setAttribute("xlink:href", originalDocumentURI);
+            parentDocument.setAttribute("xlink:show", "new");
+            root.appendChild(parentDocument);
 
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = tf.newTransformer();
