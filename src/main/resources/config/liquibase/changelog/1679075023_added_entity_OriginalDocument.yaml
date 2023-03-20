@@ -23,7 +23,7 @@ databaseChangeLog:
                    constraints:
                      nullable: false
                 - column:
-                    name: processing_status
+                    name: current_phase
                     type: nvarchar(150)
                     constraints:
                       nullable: false

@@ -1,6 +1,6 @@
 package com.ediweb.interview.documentconverstion.domain;
 
-import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,8 +35,8 @@ public class OriginalDocument implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "processing_status", nullable = false)
-    private DocumentProcessingStatus processingStatus;
+    @Column(name = "current_phase", nullable = false)
+    private DocumentLifeCycle currentPhase;
 
     @Column(name = "received_date", nullable = false)
     @CreationTimestamp
@@ -66,12 +66,12 @@ public class OriginalDocument implements Serializable {
         this.documentBody = documentBody;
     }
 
-    public DocumentProcessingStatus getProcessingStatus() {
-        return processingStatus;
+    public DocumentLifeCycle getCurrentPhase() {
+        return currentPhase;
     }
 
-    public void setProcessingStatus(DocumentProcessingStatus processingStatus) {
-        this.processingStatus = processingStatus;
+    public void setCurrentPhase(DocumentLifeCycle currentPhase) {
+        this.currentPhase = currentPhase;
     }
 
     public ZonedDateTime getReceivedDate() {
@@ -100,11 +100,11 @@ public class OriginalDocument implements Serializable {
 
     @Override
     public String toString() {
-        return "Document{" +
+        return "OriginalDocument{" +
                 "id=" + getId() +
                 ", fileName='" + getFileName() + "'" +
                 ", documentBody='" + getDocumentBody() + "'" +
-                ", processingStatus='" + getProcessingStatus() + "'" +
+                ", currentPhase='" + getCurrentPhase() + "'" +
                 ", receivedDate='" + getReceivedDate() + "'" +
                 "}";
     }

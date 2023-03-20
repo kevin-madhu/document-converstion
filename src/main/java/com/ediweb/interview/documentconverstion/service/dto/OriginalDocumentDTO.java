@@ -1,6 +1,6 @@
 package com.ediweb.interview.documentconverstion.service.dto;
 
-import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.validation.constraints.NotBlank;
@@ -19,7 +19,7 @@ public class OriginalDocumentDTO {
     private String documentBody;
 
     @NotNull
-    private DocumentProcessingStatus processingStatus;
+    private DocumentLifeCycle currentPhase;
 
     private ZonedDateTime receivedDate;
 
@@ -47,12 +47,12 @@ public class OriginalDocumentDTO {
         this.documentBody = documentBody;
     }
 
-    public DocumentProcessingStatus getProcessingStatus() {
-        return processingStatus;
+    public DocumentLifeCycle getCurrentPhase() {
+        return currentPhase;
     }
 
-    public void setProcessingStatus(DocumentProcessingStatus processingStatus) {
-        this.processingStatus = processingStatus;
+    public void setCurrentPhase(DocumentLifeCycle currentPhase) {
+        this.currentPhase = currentPhase;
     }
 
     public ZonedDateTime getReceivedDate() {
@@ -86,11 +86,11 @@ public class OriginalDocumentDTO {
 
     @Override
     public String toString() {
-        return "OriginalDocument{" +
+        return "OriginalDocumentDTO{" +
                 "id=" + getId() +
                 ", fileName='" + getFileName() + "'" +
                 ", documentBody='" + getDocumentBody() + "'" +
-                ", processingStatus='" + getProcessingStatus() + "'" +
+                ", currentPhase='" + getCurrentPhase() + "'" +
                 ", receivedDate='" + getReceivedDate() + "'" +
                 "}";
     }

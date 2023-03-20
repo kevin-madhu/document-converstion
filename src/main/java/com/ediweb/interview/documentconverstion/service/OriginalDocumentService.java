@@ -1,7 +1,7 @@
 package com.ediweb.interview.documentconverstion.service;
 
 import com.ediweb.interview.documentconverstion.domain.OriginalDocument;
-import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
 import com.ediweb.interview.documentconverstion.repository.OriginalDocumentRepository;
 import com.ediweb.interview.documentconverstion.service.dto.OriginalDocumentDTO;
 import com.ediweb.interview.documentconverstion.service.mapper.OriginalDocumentMapper;
@@ -71,13 +71,14 @@ public class OriginalDocumentService {
      * Set processing status of original document by id.
      *
      * @param id the id of the entity.
-     * @param processingStatus the processingStatus of the entity.
+     * @param currentPhase the processingStatus of the entity.
      */
-    public void setProcessingStatus(Long id, DocumentProcessingStatus processingStatus) {
-        log.debug("Request to set processing status of OriginalDocument : {} to {}", id, processingStatus);
+    public OriginalDocumentDTO setCurrentPhase(Long id, DocumentLifeCycle currentPhase) {
+        log.debug("Request to set current life cycle Phase of OriginalDocument : {} to {}", id, currentPhase);
 
         OriginalDocument originalDocument = originalDocumentRepository.findById(id).orElseThrow();
-        originalDocument.setProcessingStatus(processingStatus);
+        originalDocument.setCurrentPhase(currentPhase);
         originalDocumentRepository.save(originalDocument);
+        return originalDocumentMapper.toDto(originalDocument);
     }
 }

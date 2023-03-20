@@ -1,11 +1,10 @@
-package com.ediweb.interview.documentconverstion.integration;
+package com.ediweb.interview.documentconverstion.integration.camel.processors;
 
+import com.ediweb.interview.documentconverstion.config.misc.ApplicationProperties;
 import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
-import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentProcessingStatus;
-import com.ediweb.interview.documentconverstion.service.OriginalDocumentService;
-import com.ediweb.interview.documentconverstion.service.ProcessedDocumentService;
-import com.ediweb.interview.documentconverstion.service.dto.ProcessedDocumentDTO;
+import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
 import org.apache.camel.Exchange;
+import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,10 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
@@ -26,32 +28,25 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 @Component
-public class ConvertedDocumentInputProcessor {
-    Logger logger = LoggerFactory.getLogger(ConvertedDocumentInputProcessor.class);
+public class OriginalDocumentTransformer {
+    Logger logger = LoggerFactory.getLogger(OriginalDocumentTransformer.class);
+    private final ApplicationProperties applicationProperties;
+    private final FluentProducerTemplate fluentProducerTemplate;
 
-    private final ProcessedDocumentService processedDocumentService;
-
-    private final OriginalDocumentService originalDocumentService;
-
-    public ConvertedDocumentInputProcessor(ProcessedDocumentService processedDocumentService, OriginalDocumentService originalDocumentService) {
-        this.processedDocumentService = processedDocumentService;
-        this.originalDocumentService = originalDocumentService;
+    public OriginalDocumentTransformer(ApplicationProperties applicationProperties, FluentProducerTemplate fluentProducerTemplate) {
+        this.applicationProperties = applicationProperties;
+        this.fluentProducerTemplate = fluentProducerTemplate;
     }
 
     @Handler
-    public void process(Exchange exchange) {
-        String documentName = exchange.getMessage().getHeader(CamelExchangeProperty.CamelFileName.toString()).toString();
-        Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
+    public void transformDocument(Exchange exchange) {
+        exchange = fluentProducerTemplate.withExchange(exchange).toF("xslt:%s", applicationProperties.getCamel().getXsltPath()).send();
         String xmlDocumentContent = exchange.getMessage().getBody().toString();
-
-        logger.info("Document with name " + documentName + " was uploaded.");
-
-        ProcessedDocumentDTO processedDocumentDTO = new ProcessedDocumentDTO();
-        processedDocumentDTO.setDocumentBody(modifyXMLDocument(xmlDocumentContent, originalDocumentId));
-        processedDocumentDTO.setOriginalDocumentId(originalDocumentId);
-        processedDocumentService.save(processedDocumentDTO);
-
-        originalDocumentService.setProcessingStatus(processedDocumentDTO.getOriginalDocumentId(), DocumentProcessingStatus.COMPLETED);
+        Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
+        xmlDocumentContent = modifyXMLDocument(xmlDocumentContent, originalDocumentId);
+        exchange.getMessage().setBody(xmlDocumentContent);
+        fluentProducerTemplate.withExchange(exchange).to(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow()).send();
+        fluentProducerTemplate.stop();
     }
 
     private String modifyXMLDocument(String xmlDocumentContent, Long originalDocumentId) {
