@@ -29,7 +29,7 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
         final String xsltEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow();
         final String transformedDocumentStorageEndpoint = DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow();
 
-        from("file:" + applicationProperties.getCamel().getWatchFileDirectory1() + "?delete=true")
+        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
                 .id(DocumentLifeCycle.DOCUMENT_COLLECTION.toString())
                 .convertBodyTo(String.class)
                 .to(documentStorageEndpoint);
