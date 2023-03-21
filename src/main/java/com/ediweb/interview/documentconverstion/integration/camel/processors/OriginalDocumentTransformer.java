@@ -40,56 +40,75 @@ public class OriginalDocumentTransformer {
 
     @Handler
     public void transformDocument(Exchange exchange) {
-        exchange = fluentProducerTemplate.withExchange(exchange).toF("xslt:%s", applicationProperties.getCamel().getXsltPath()).send();
-        String xmlDocumentContent = exchange.getMessage().getBody().toString();
-        Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
-        xmlDocumentContent = modifyXMLDocument(xmlDocumentContent, originalDocumentId);
-        exchange.getMessage().setBody(xmlDocumentContent);
-        fluentProducerTemplate.withExchange(exchange).to(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow()).send();
-        fluentProducerTemplate.stop();
-    }
-
-    private String modifyXMLDocument(String xmlDocumentContent, Long originalDocumentId) {
-        String modifiedXMLDocumentContent = null;
 
         try {
-            Document document = parseXMLDocument(xmlDocumentContent);
-            Element root = document.getDocumentElement();
-            String originalDocumentURI = "/api/original-documents/" + originalDocumentId;
+            fluentProducerTemplate.start();
+            exchange = fluentProducerTemplate.withExchange(exchange)
+                    .toF(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow())
+                    .send();
 
-            root.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-            Element parentDocument = document.createElement("Original-Document");
-            parentDocument.setAttribute("xlink:type", "simple");
-            parentDocument.setAttribute("xlink:href", originalDocumentURI);
-            parentDocument.setAttribute("xlink:show", "new");
-            root.appendChild(parentDocument);
+            Exception transformationException = exchange.getException();
+            if(transformationException == null) {
+                String xmlDocumentContent = exchange.getMessage().getBody().toString();
+                Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
 
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer transformer = tf.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
+                try {
+                    Document document = parseXMLDocument(xmlDocumentContent);
+                    xmlDocumentContent = modifyXMLDocument(originalDocumentId, document);
+                    OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.DOCUMENT_TRANSFORMATION_SUCCESS);
 
-            modifiedXMLDocumentContent = writer.getBuffer().toString();
-        } catch (TransformerException e) {
+                    exchange.getMessage().setBody(xmlDocumentContent);
+                    fluentProducerTemplate.start();
+                    fluentProducerTemplate
+                            .withExchange(exchange)
+                            .to(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow())
+                            .send();
+                    fluentProducerTemplate.stop();
+                } catch (Exception e) {
+                    OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.DOCUMENT_TRANSFORMATION_ERROR);
+                    e.printStackTrace();
+                }
+            } else {
+                throw transformationException;
+            }
+        } catch (Exception e) {
+            OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.DOCUMENT_TRANSFORMATION_ERROR);
             e.printStackTrace();
         }
+    }
+
+    private String modifyXMLDocument(Long originalDocumentId, Document document) throws TransformerException {
+        String modifiedXMLDocumentContent = null;
+
+        Element root = document.getDocumentElement();
+        String originalDocumentURI = "/api/original-documents/" + originalDocumentId;
+
+        root.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        Element parentDocument = document.createElement("Original-Document");
+        parentDocument.setAttribute("xlink:type", "simple");
+        parentDocument.setAttribute("xlink:href", originalDocumentURI);
+        parentDocument.setAttribute("xlink:show", "new");
+        root.appendChild(parentDocument);
+
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+        modifiedXMLDocumentContent = writer.getBuffer().toString();
 
         return modifiedXMLDocumentContent;
     }
 
-    private Document parseXMLDocument(String xmlDocumentContent) {
+    private Document parseXMLDocument(String xmlDocumentContent) throws ParserConfigurationException, SAXException, IOException {
 
         Document document = null;
-        try {
-            InputSource xmlDocumentSource = new InputSource( new StringReader(xmlDocumentContent));
+        InputSource xmlDocumentSource = new InputSource( new StringReader(xmlDocumentContent));
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-            document = documentBuilder.parse(xmlDocumentSource);
-        } catch (IOException | SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+        document = documentBuilder.parse(xmlDocumentSource);
 
         return document;
     }

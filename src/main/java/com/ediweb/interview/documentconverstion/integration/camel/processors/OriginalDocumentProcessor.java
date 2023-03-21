@@ -2,6 +2,7 @@ package com.ediweb.interview.documentconverstion.integration.camel.processors;
 
 import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
+import com.ediweb.interview.documentconverstion.integration.camel.routes.DocumentLifeCycleRoutes;
 import com.ediweb.interview.documentconverstion.service.OriginalDocumentService;
 import com.ediweb.interview.documentconverstion.service.dto.OriginalDocumentDTO;
 import org.apache.camel.Exchange;
@@ -32,11 +33,15 @@ public class OriginalDocumentProcessor {
         originalDocumentDTO.setDocumentBody(exchange.getMessage().getBody().toString());
         originalDocumentDTO.setCurrentPhase(DocumentLifeCycle.DOCUMENT_STORAGE_SUCCESS);
         OriginalDocumentDTO originalDocument = originalDocumentService.save(originalDocumentDTO);
-        logger.info("Document with name " + documentName + " was uploaded.");
+        logger.info("Document with name " + documentName + " was uploaded successfully.");
 
         try {
             exchange.setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString(), originalDocument.getId());
-            fluentProducerTemplate.withExchange(exchange).to(DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow()).send();
+            fluentProducerTemplate.start();
+            fluentProducerTemplate
+                    .withExchange(exchange)
+                    .to(DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow())
+                    .send();
             fluentProducerTemplate.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,7 +54,7 @@ public class OriginalDocumentProcessor {
             Long documentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
             DocumentLifeCycle documentPhase = DocumentLifeCycle.valueOf(exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_PHASE.toString()).toString());
 
-            logger.info("Updating status of document #" + documentId + " to " + documentPhase + ".");
+            logger.info("Updating status of original document #" + documentId + " to " + documentPhase + ".");
             OriginalDocumentDTO originalDocumentDTO = originalDocumentService.setCurrentPhase(documentId, documentPhase);
 
             return(originalDocumentDTO.getCurrentPhase() == documentPhase);
@@ -58,5 +63,19 @@ public class OriginalDocumentProcessor {
         }
 
         return false;
+    }
+
+    public static void sendPhaseUpdateMessage(FluentProducerTemplate fluentProducerTemplate, Exchange exchange, DocumentLifeCycle currentPhase) {
+        try {
+            exchange.setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_PHASE.toString(), currentPhase);
+            fluentProducerTemplate.start();
+            fluentProducerTemplate.withExchange(exchange)
+                    .to(DocumentLifeCycleRoutes.updateDocumentStatusEndpoint)
+                    .send();
+            fluentProducerTemplate.close();
+        } catch (Exception e) {
+            fluentProducerTemplate.stop();
+            e.printStackTrace();
+        }
     }
 }

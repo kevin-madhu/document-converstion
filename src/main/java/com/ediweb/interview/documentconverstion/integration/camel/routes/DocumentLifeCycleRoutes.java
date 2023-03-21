@@ -1,12 +1,16 @@
 package com.ediweb.interview.documentconverstion.integration.camel.routes;
 
 import com.ediweb.interview.documentconverstion.config.misc.ApplicationProperties;
+import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
 import com.ediweb.interview.documentconverstion.integration.camel.processors.OriginalDocumentProcessor;
 import com.ediweb.interview.documentconverstion.integration.camel.processors.OriginalDocumentTransformer;
 import com.ediweb.interview.documentconverstion.integration.camel.processors.TransformedDocumentProcessor;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
+
+import javax.xml.transform.TransformerException;
 
 @Component
 public class DocumentLifeCycleRoutes extends RouteBuilder {
@@ -22,6 +26,7 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
     public void configure() throws Exception {
         final String documentStorageEndpoint = DocumentLifeCycle.DOCUMENT_STORAGE.getEndpoint().orElseThrow();
         final String documentTransformationEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow();
+        final String xsltEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow();
         final String transformedDocumentStorageEndpoint = DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow();
 
         from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
@@ -36,6 +41,23 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
         from(documentTransformationEndpoint)
                 .id(DocumentLifeCycle.DOCUMENT_TRANSFORMATION.toString())
                 .bean(OriginalDocumentTransformer.class);
+
+        from(xsltEndpoint)
+                .id(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.toString())
+                .doTry()
+                    .to("xslt:" + applicationProperties.getCamel().getXsltPath())
+                .doCatch(TransformerException.class)
+                    .log(LoggingLevel.ERROR, "XSLT Transformation exception.")
+                    .setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_PHASE.toString(), constant(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT_ERROR))
+                    .bean(OriginalDocumentProcessor.class, "updateOriginalDocumentPhase")
+                    .stop()
+                .doCatch(Exception.class)
+                    .log(LoggingLevel.ERROR, "XSLT Transformation failed generic")
+                    .setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_PHASE.toString(), constant(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT_ERROR))
+                    .bean(OriginalDocumentProcessor.class, "updateOriginalDocumentPhase")
+                .stop()
+                .end();
+
 
         from(transformedDocumentStorageEndpoint)
                 .id(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.toString())

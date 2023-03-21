@@ -27,6 +27,18 @@ public enum DocumentLifeCycle {
             return Optional.of("direct:transformOriginalDocument");
         }
     },
+    DOCUMENT_TRANSFORMATION_XSLT {
+        @Override
+        public Optional<String> getEndpoint() {
+            return Optional.of("direct:transformUsingXSLT");
+        }
+    },
+    DOCUMENT_TRANSFORMATION_XSLT_ERROR {
+        @Override
+        public Optional<String> getEndpoint() {
+            return Optional.empty();
+        }
+    },
     DOCUMENT_TRANSFORMATION_ERROR {
         @Override
         public Optional<String> getEndpoint() {
