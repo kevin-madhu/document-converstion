@@ -29,7 +29,7 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
         final String xsltEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow();
         final String transformedDocumentStorageEndpoint = DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow();
 
-        from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
+        from("file:" + applicationProperties.getCamel().getWatchFileDirectory1() + "?delete=true")
                 .id(DocumentLifeCycle.DOCUMENT_COLLECTION.toString())
                 .convertBodyTo(String.class)
                 .to(documentStorageEndpoint);
@@ -48,8 +48,6 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
                     .to("xslt:" + applicationProperties.getCamel().getXsltPath())
                 .doCatch(TransformerException.class)
                     .log(LoggingLevel.ERROR, "XSLT Transformation exception.")
-                    .setProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_PHASE.toString(), constant(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT_ERROR))
-                    .bean(OriginalDocumentProcessor.class, "updateOriginalDocumentPhase")
                     .stop()
                 .doCatch(Exception.class)
                     .log(LoggingLevel.ERROR, "XSLT Transformation failed generic")
@@ -57,7 +55,6 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
                     .bean(OriginalDocumentProcessor.class, "updateOriginalDocumentPhase")
                 .stop()
                 .end();
-
 
         from(transformedDocumentStorageEndpoint)
                 .id(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.toString())

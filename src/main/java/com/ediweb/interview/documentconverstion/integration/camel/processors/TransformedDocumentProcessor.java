@@ -1,11 +1,9 @@
 package com.ediweb.interview.documentconverstion.integration.camel.processors;
 
-import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
 import com.ediweb.interview.documentconverstion.service.ProcessedDocumentService;
 import com.ediweb.interview.documentconverstion.service.dto.ProcessedDocumentDTO;
 import org.apache.camel.Exchange;
-import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,23 +15,18 @@ public class TransformedDocumentProcessor {
 
     private final ProcessedDocumentService processedDocumentService;
 
-    private final FluentProducerTemplate fluentProducerTemplate;
+    private final DocumentLifeCycleSignalProducer documentLifeCycleSignalProducer;
 
-    public TransformedDocumentProcessor(ProcessedDocumentService processedDocumentService, FluentProducerTemplate fluentProducerTemplate) {
+    public TransformedDocumentProcessor(ProcessedDocumentService processedDocumentService, DocumentLifeCycleSignalProducer documentLifeCycleSignalProducer) {
         this.processedDocumentService = processedDocumentService;
-        this.fluentProducerTemplate = fluentProducerTemplate;
+        this.documentLifeCycleSignalProducer = documentLifeCycleSignalProducer;
     }
 
     @Handler
     public void storeTransformedDocument(Exchange exchange) {
-        String documentName = exchange.getMessage().getHeader(CamelExchangeProperty.CamelFileName.toString()).toString();
-        Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
-
-        ProcessedDocumentDTO processedDocumentDTO = new ProcessedDocumentDTO();
-        processedDocumentDTO.setDocumentBody(exchange.getMessage().getBody().toString());
-        processedDocumentDTO.setOriginalDocumentId(originalDocumentId);
+        ProcessedDocumentDTO processedDocumentDTO = (ProcessedDocumentDTO) exchange.getMessage().getBody();
         processedDocumentService.save(processedDocumentDTO);
-        logger.info("Transformation of Document with name " + documentName + " was uploaded successfully.");
-        OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORED);
+        logger.info("Transformation of Original Document #" + processedDocumentDTO.getOriginalDocumentId() + " was uploaded successfully.");
+        documentLifeCycleSignalProducer.sendPhaseUpdateSignal(processedDocumentDTO.getOriginalDocumentId(), DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORED);
     }
 }

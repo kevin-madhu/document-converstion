@@ -1,8 +1,8 @@
 package com.ediweb.interview.documentconverstion.integration.camel.processors;
 
-import com.ediweb.interview.documentconverstion.config.misc.ApplicationProperties;
-import com.ediweb.interview.documentconverstion.domain.enumeration.CamelExchangeProperty;
 import com.ediweb.interview.documentconverstion.domain.enumeration.DocumentLifeCycle;
+import com.ediweb.interview.documentconverstion.service.dto.OriginalDocumentDTO;
+import com.ediweb.interview.documentconverstion.service.dto.ProcessedDocumentDTO;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.Handler;
@@ -26,55 +26,69 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Optional;
 
 @Component
 public class OriginalDocumentTransformer {
     Logger logger = LoggerFactory.getLogger(OriginalDocumentTransformer.class);
-    private final ApplicationProperties applicationProperties;
     private final FluentProducerTemplate fluentProducerTemplate;
 
-    public OriginalDocumentTransformer(ApplicationProperties applicationProperties, FluentProducerTemplate fluentProducerTemplate) {
-        this.applicationProperties = applicationProperties;
+    private final DocumentLifeCycleSignalProducer documentLifeCycleSignalProducer;
+
+    public OriginalDocumentTransformer(FluentProducerTemplate fluentProducerTemplate, DocumentLifeCycleSignalProducer documentLifeCycleSignalProducer) {
         this.fluentProducerTemplate = fluentProducerTemplate;
+        this.documentLifeCycleSignalProducer = documentLifeCycleSignalProducer;
     }
 
     @Handler
-    public void transformDocument(Exchange exchange) {
+    public void storeDocumentLifeCycle(Exchange exchange) {
+        try {
+            OriginalDocumentDTO originalDocumentDTO = (OriginalDocumentDTO) exchange.getMessage().getBody();
+            Optional<ProcessedDocumentDTO> processedDocumentDTOOptional = transformDocument(originalDocumentDTO);
 
+            if(processedDocumentDTOOptional.isPresent()) {
+                ProcessedDocumentDTO processedDocumentDTO = processedDocumentDTOOptional.get();
+                logger.info("Document with name " + originalDocumentDTO.getFileName() + " was transformed successfully.");
+                documentLifeCycleSignalProducer.sendStoreTransformedDocumentSignal(processedDocumentDTO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Optional<ProcessedDocumentDTO> transformDocument(OriginalDocumentDTO originalDocumentDTO) {
         try {
             fluentProducerTemplate.start();
-            exchange = fluentProducerTemplate.withExchange(exchange)
+            Exchange exchange = fluentProducerTemplate.withBody(originalDocumentDTO.getDocumentBody())
                     .toF(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow())
                     .send();
 
             Exception transformationException = exchange.getException();
             if(transformationException == null) {
                 String xmlDocumentContent = exchange.getMessage().getBody().toString();
-                Long originalDocumentId = (Long) (exchange.getProperty(CamelExchangeProperty.ORIGINAL_DOCUMENT_ID.toString()));
 
                 try {
                     Document document = parseXMLDocument(xmlDocumentContent);
-                    xmlDocumentContent = modifyXMLDocument(originalDocumentId, document);
-                    OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.DOCUMENT_TRANSFORMATION_SUCCESS);
+                    xmlDocumentContent = modifyXMLDocument(originalDocumentDTO.getId(), document);
+                    documentLifeCycleSignalProducer.sendPhaseUpdateSignal(originalDocumentDTO.getId(), DocumentLifeCycle.DOCUMENT_TRANSFORMATION_SUCCESS);
 
-                    exchange.getMessage().setBody(xmlDocumentContent);
-                    fluentProducerTemplate.start();
-                    fluentProducerTemplate
-                            .withExchange(exchange)
-                            .to(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow())
-                            .send();
-                    fluentProducerTemplate.stop();
+                    ProcessedDocumentDTO processedDocumentDTO = new ProcessedDocumentDTO();
+                    processedDocumentDTO.setOriginalDocumentId(originalDocumentDTO.getId());
+                    processedDocumentDTO.setDocumentBody(xmlDocumentContent);
+                    return Optional.of(processedDocumentDTO);
                 } catch (Exception e) {
-                    OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.DOCUMENT_TRANSFORMATION_ERROR);
+                    documentLifeCycleSignalProducer.sendPhaseUpdateSignal(originalDocumentDTO.getId(), DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT_ERROR);
                     e.printStackTrace();
                 }
             } else {
                 throw transformationException;
             }
         } catch (Exception e) {
-            OriginalDocumentProcessor.sendPhaseUpdateMessage(fluentProducerTemplate, exchange, DocumentLifeCycle.DOCUMENT_TRANSFORMATION_ERROR);
+            documentLifeCycleSignalProducer.sendPhaseUpdateSignal(originalDocumentDTO.getId(), DocumentLifeCycle.DOCUMENT_TRANSFORMATION_ERROR);
             e.printStackTrace();
         }
+
+        return Optional.empty();
     }
 
     private String modifyXMLDocument(Long originalDocumentId, Document document) throws TransformerException {
