@@ -76,7 +76,7 @@ public class OriginalDocumentService {
     public OriginalDocumentDTO setCurrentPhase(Long id, DocumentLifeCycle currentPhase) {
         log.debug("Request to set current life cycle Phase of OriginalDocument : {} to {}", id, currentPhase);
 
-        OriginalDocument originalDocument = originalDocumentRepository.findById(id).orElseThrow();
+        OriginalDocument originalDocument = originalDocumentRepository.findById(id).orElseThrow(RuntimeException::new);
         originalDocument.setCurrentPhase(currentPhase);
         originalDocumentRepository.save(originalDocument);
         return originalDocumentMapper.toDto(originalDocument);

@@ -27,7 +27,7 @@ public class DocumentLifeCycleSignalProducer {
             fluentProducerTemplate.start();
             fluentProducerTemplate
                     .withExchange(exchange)
-                    .to(DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow())
+                    .to(DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow(RuntimeException::new))
                     .send();
             fluentProducerTemplate.close();
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class DocumentLifeCycleSignalProducer {
             fluentProducerTemplate.start();
             fluentProducerTemplate
                     .withExchange(exchange)
-                    .to(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow())
+                    .to(DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow(RuntimeException::new))
                     .send();
             fluentProducerTemplate.stop();
         } catch (Exception e) {

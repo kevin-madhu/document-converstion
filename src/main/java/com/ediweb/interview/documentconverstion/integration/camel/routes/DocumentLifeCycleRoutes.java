@@ -24,10 +24,10 @@ public class DocumentLifeCycleRoutes extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        final String documentStorageEndpoint = DocumentLifeCycle.DOCUMENT_STORAGE.getEndpoint().orElseThrow();
-        final String documentTransformationEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow();
-        final String xsltEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow();
-        final String transformedDocumentStorageEndpoint = DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow();
+        final String documentStorageEndpoint = DocumentLifeCycle.DOCUMENT_STORAGE.getEndpoint().orElseThrow(RuntimeException::new);
+        final String documentTransformationEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION.getEndpoint().orElseThrow(RuntimeException::new);
+        final String xsltEndpoint = DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow(RuntimeException::new);
+        final String transformedDocumentStorageEndpoint = DocumentLifeCycle.TRANSFORMED_DOCUMENT_STORAGE.getEndpoint().orElseThrow(RuntimeException::new);
 
         from("file:" + applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true")
                 .id(DocumentLifeCycle.DOCUMENT_COLLECTION.toString())

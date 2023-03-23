@@ -60,7 +60,7 @@ public class OriginalDocumentTransformer {
         try {
             fluentProducerTemplate.start();
             Exchange exchange = fluentProducerTemplate.withBody(originalDocumentDTO.getDocumentBody())
-                    .toF(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow())
+                    .toF(DocumentLifeCycle.DOCUMENT_TRANSFORMATION_XSLT.getEndpoint().orElseThrow(RuntimeException::new))
                     .send();
 
             Exception transformationException = exchange.getException();
