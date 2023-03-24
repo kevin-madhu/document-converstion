@@ -1,0 +1,13 @@
+package com.ediweb.interview.documentconversion.domain.enumeration;
+
+public enum OriginalDocumentEvent {
+    NONE,
+    DOCUMENT_STORAGE_SUCCESS,
+    DOCUMENT_TRANSFORMATION_XSLT_ERROR,
+    DOCUMENT_TRANSFORMATION_ERROR,
+    DOCUMENT_PARSE_ERROR,
+    DOCUMENT_TRANSFORMATION_SUCCESS,
+    TRANSFORMED_DOCUMENT_STORED,
+    DOCUMENT_LINKED,
+
+}

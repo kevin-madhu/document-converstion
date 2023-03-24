@@ -19,6 +19,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.mapstruct:mapstruct:1.5.3.Final'
 	implementation 'org.apache.camel.springboot:camel-spring-boot-starter:3.14.7'
+	implementation 'org.apache.camel:camel-kafka:3.14.7'
 	implementation 'org.liquibase:liquibase-core'
 	implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-xml"
 	annotationProcessor "org.mapstruct:mapstruct-processor:1.5.3.Final"

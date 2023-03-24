@@ -1,8 +1,8 @@
 package com.ediweb.interview.documentconversion.service;
 
+import com.ediweb.interview.documentconversion.domain.enumeration.OriginalDocumentEvent;
 import com.ediweb.interview.documentconversion.service.dto.OriginalDocumentDTO;
 import com.ediweb.interview.documentconversion.domain.OriginalDocument;
-import com.ediweb.interview.documentconversion.domain.enumeration.DocumentLifeCycle;
 import com.ediweb.interview.documentconversion.repository.OriginalDocumentRepository;
 import com.ediweb.interview.documentconversion.service.mapper.OriginalDocumentMapper;
 import org.slf4j.Logger;
@@ -73,7 +73,7 @@ public class OriginalDocumentService {
      * @param id the id of the entity.
      * @param currentPhase the processingStatus of the entity.
      */
-    public OriginalDocumentDTO setCurrentPhase(Long id, DocumentLifeCycle currentPhase) {
+    public OriginalDocumentDTO setCurrentPhase(Long id, OriginalDocumentEvent currentPhase) {
         log.debug("Request to set current life cycle Phase of OriginalDocument : {} to {}", id, currentPhase);
 
         OriginalDocument originalDocument = originalDocumentRepository.findById(id).orElseThrow(RuntimeException::new);

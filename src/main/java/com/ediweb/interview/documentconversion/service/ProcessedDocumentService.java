@@ -65,4 +65,34 @@ public class ProcessedDocumentService {
         log.debug("Request to get Processed Document : {}", id);
         return documentRepository.findById(id).map(processedDocumentMapper::toDto);
     }
+
+    /**
+     * Get one processed document by id.
+     *
+     * @param originalDocumentId the id of the entity.
+     * @return the entity.
+     */
+    @Transactional(readOnly = true)
+    public Optional<ProcessedDocumentDTO> findByOriginalDocumentId(Long originalDocumentId) {
+        log.debug("Request to get Processed Document by OriginalDocument : {}", originalDocumentId);
+        return documentRepository.findByOriginalDocumentId(originalDocumentId).map(processedDocumentMapper::toDto);
+    }
+
+    /**
+     * Get one processed document by id.
+     *
+     * @param id the id of the entity.
+     * @return the entity.
+     */
+    public Optional<ProcessedDocumentDTO> updateDocumentBody(Long id, String newDocumentBody) {
+        log.debug("Request to update Processed Document Body : {} {}", id, newDocumentBody);
+        return documentRepository
+                .findById(id)
+                .map(existingDocument -> {
+                    existingDocument.setDocumentBody(newDocumentBody);
+                    return existingDocument;
+                })
+                .map(documentRepository::save)
+                .map(processedDocumentMapper::toDto);
+    }
 }

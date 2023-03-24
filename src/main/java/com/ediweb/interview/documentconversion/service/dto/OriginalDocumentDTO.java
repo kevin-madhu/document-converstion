@@ -1,6 +1,6 @@
 package com.ediweb.interview.documentconversion.service.dto;
 
-import com.ediweb.interview.documentconversion.domain.enumeration.DocumentLifeCycle;
+import com.ediweb.interview.documentconversion.domain.enumeration.OriginalDocumentEvent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.validation.constraints.NotBlank;
@@ -19,7 +19,7 @@ public class OriginalDocumentDTO {
     private String documentBody;
 
     @NotNull
-    private DocumentLifeCycle currentPhase;
+    private OriginalDocumentEvent currentPhase;
 
     private ZonedDateTime receivedDate;
 
@@ -47,11 +47,11 @@ public class OriginalDocumentDTO {
         this.documentBody = documentBody;
     }
 
-    public DocumentLifeCycle getCurrentPhase() {
+    public OriginalDocumentEvent getCurrentPhase() {
         return currentPhase;
     }
 
-    public void setCurrentPhase(DocumentLifeCycle currentPhase) {
+    public void setCurrentPhase(OriginalDocumentEvent currentPhase) {
         this.currentPhase = currentPhase;
     }
 

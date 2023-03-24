@@ -1,6 +1,6 @@
 package com.ediweb.interview.documentconversion.domain;
 
-import com.ediweb.interview.documentconversion.domain.enumeration.DocumentLifeCycle;
+import com.ediweb.interview.documentconversion.domain.enumeration.OriginalDocumentEvent;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CreationTimestamp;
@@ -36,7 +36,7 @@ public class OriginalDocument implements Serializable {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "current_phase", nullable = false)
-    private DocumentLifeCycle currentPhase;
+    private OriginalDocumentEvent currentPhase;
 
     @Column(name = "received_date", nullable = false)
     @CreationTimestamp
@@ -66,11 +66,11 @@ public class OriginalDocument implements Serializable {
         this.documentBody = documentBody;
     }
 
-    public DocumentLifeCycle getCurrentPhase() {
+    public OriginalDocumentEvent getCurrentPhase() {
         return currentPhase;
     }
 
-    public void setCurrentPhase(DocumentLifeCycle currentPhase) {
+    public void setCurrentPhase(OriginalDocumentEvent currentPhase) {
         this.currentPhase = currentPhase;
     }
 

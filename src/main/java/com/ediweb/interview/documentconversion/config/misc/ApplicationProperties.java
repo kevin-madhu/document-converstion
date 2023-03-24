@@ -13,6 +13,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ApplicationProperties {
     private final Camel camel = new Camel();
 
+    private final Kafka kafka = new Kafka();
+
     /**
      * <p>Getter for the field <code>camel</code>.</p>
      *
@@ -20,6 +22,10 @@ public class ApplicationProperties {
      */
     public Camel getCamel() {
         return camel;
+    }
+
+    public Kafka getKafka() {
+        return kafka;
     }
 
     public static class Camel {
@@ -42,6 +48,28 @@ public class ApplicationProperties {
 
         public void setXsltPath(String xsltPath) {
             this.xsltPath = xsltPath;
+        }
+    }
+
+    public static class Kafka {
+        private String brokers = ApplicationDefaults.Kafka.brokers;
+
+        private String originalDocumentEventsTopic = ApplicationDefaults.Kafka.originalDocumentEventsTopic;
+
+        public String getBrokers() {
+            return brokers;
+        }
+
+        public void setBrokers(String brokers) {
+            this.brokers = brokers;
+        }
+
+        public String getOriginalDocumentEventsTopic() {
+            return originalDocumentEventsTopic;
+        }
+
+        public void setOriginalDocumentEventsTopic(String originalDocumentEventsTopic) {
+            this.originalDocumentEventsTopic = originalDocumentEventsTopic;
         }
     }
 }
