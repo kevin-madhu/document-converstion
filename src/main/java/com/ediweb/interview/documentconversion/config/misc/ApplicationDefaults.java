@@ -8,6 +8,9 @@ public interface ApplicationDefaults {
     interface Camel {
 
         String watchFileDirectory = "/opt/edi-documents/Z";
+
+        boolean removeFileAfterRead = true;
+
         String xsltPath = "integration/idoc2order.xsl";
     }
 

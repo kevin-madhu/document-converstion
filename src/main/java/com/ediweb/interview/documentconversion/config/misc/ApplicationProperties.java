@@ -32,6 +32,8 @@ public class ApplicationProperties {
 
         private String watchFileDirectory = ApplicationDefaults.Camel.watchFileDirectory;
 
+        private boolean removeFileAfterRead = ApplicationDefaults.Camel.removeFileAfterRead;
+
         private String xsltPath = ApplicationDefaults.Camel.xsltPath;
 
         public String getWatchFileDirectory() {
@@ -40,6 +42,14 @@ public class ApplicationProperties {
 
         public void setWatchFileDirectory(String watchFileDirectory) {
             this.watchFileDirectory = watchFileDirectory;
+        }
+
+        public boolean getRemoveFileAfterRead() {
+            return removeFileAfterRead;
+        }
+
+        public void setRemoveFileAfterRead(boolean removeFileAfterRead) {
+            this.removeFileAfterRead = removeFileAfterRead;
         }
 
         public String getXsltPath() {

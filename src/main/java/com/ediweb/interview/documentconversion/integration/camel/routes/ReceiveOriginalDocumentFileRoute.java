@@ -5,6 +5,8 @@ import com.ediweb.interview.documentconversion.domain.enumeration.DocumentCamelR
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.file;
+
 @Component
 public class ReceiveOriginalDocumentFileRoute extends RouteBuilder {
     private final ApplicationProperties applicationProperties;
@@ -15,8 +17,11 @@ public class ReceiveOriginalDocumentFileRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        from(DocumentCamelRoute.RECEIVE_DOCUMENT_FILE.getEndpoint(applicationProperties.getCamel().getWatchFileDirectory() + "?delete=true"))
-                .id(DocumentCamelRoute.RECEIVE_DOCUMENT_FILE.getEndpoint())
+        from(
+                file(applicationProperties.getCamel().getWatchFileDirectory())
+                        .delete(applicationProperties.getCamel().getRemoveFileAfterRead())
+        )
+                .id(DocumentCamelRoute.RECEIVE_DOCUMENT_FILE.toString())
                 .convertBodyTo(String.class)
                 .to(DocumentCamelRoute.STORE_DOCUMENT.getEndpoint());
     }
