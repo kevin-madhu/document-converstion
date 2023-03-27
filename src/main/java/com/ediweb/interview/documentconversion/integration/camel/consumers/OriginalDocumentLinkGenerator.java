@@ -2,6 +2,7 @@ package com.ediweb.interview.documentconversion.integration.camel.consumers;
 
 import com.ediweb.interview.documentconversion.domain.enumeration.OriginalDocumentEvent;
 import com.ediweb.interview.documentconversion.integration.camel.producers.OriginalDocumentEventEmitter;
+import com.ediweb.interview.documentconversion.integration.camel.util.XMLDocument;
 import com.ediweb.interview.documentconversion.service.OriginalDocumentService;
 import com.ediweb.interview.documentconversion.service.ProcessedDocumentService;
 import com.ediweb.interview.documentconversion.service.dto.OriginalDocumentDTO;
@@ -62,8 +63,9 @@ public class OriginalDocumentLinkGenerator {
                 if( originalDocumentEventDTO.getEvent() == OriginalDocumentEvent.TRANSFORMED_DOCUMENT_STORED) {
                     OriginalDocumentDTO originalDocumentDTO = originalDocumentService.findOne(originalDocumentEventDTO.getId()).orElseThrow(IllegalArgumentException::new);
 
-                    Document document = parseXMLDocument(originalDocumentDTO.getDocumentBody());
-                    String modifiedContent = modifyXMLDocument(originalDocumentDTO.getId(), document);
+                    Document document = XMLDocument.toDocument(originalDocumentDTO.getDocumentBody());
+                    generateAndAppendLinkToDocument(document, originalDocumentDTO.getId());
+                    String modifiedContent = XMLDocument.toString(document);
                     ProcessedDocumentDTO processedDocumentDTO = processedDocumentService.findByOriginalDocumentId(originalDocumentDTO.getId())
                             .orElseThrow(IllegalArgumentException::new);
                     processedDocumentService.updateDocumentBody(processedDocumentDTO.getId(), modifiedContent);
@@ -79,9 +81,7 @@ public class OriginalDocumentLinkGenerator {
         }
     }
 
-    private String modifyXMLDocument(Long originalDocumentId, Document document) throws TransformerException {
-        String modifiedXMLDocumentContent = null;
-
+    private void generateAndAppendLinkToDocument(Document document, Long originalDocumentId) throws TransformerException {
         Element root = document.getDocumentElement();
         String originalDocumentURI = "/api/original-documents/" + originalDocumentId;
 
@@ -91,24 +91,5 @@ public class OriginalDocumentLinkGenerator {
         parentDocument.setAttribute("xlink:href", originalDocumentURI);
         parentDocument.setAttribute("xlink:show", "new");
         root.appendChild(parentDocument);
-
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(document), new StreamResult(writer));
-
-        modifiedXMLDocumentContent = writer.getBuffer().toString();
-
-        return modifiedXMLDocumentContent;
-    }
-
-    private Document parseXMLDocument(String xmlDocumentContent) throws ParserConfigurationException, SAXException, IOException {
-        InputSource xmlDocumentSource = new InputSource( new StringReader(xmlDocumentContent));
-
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-
-        return  documentBuilder.parse(xmlDocumentSource);
     }
 }
